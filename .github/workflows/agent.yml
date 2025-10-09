@@ -1,0 +1,36 @@
+name: Agent runner (single-task)
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task to perform'
+        required: true
+        type: string
+      client_id:
+        description: 'Client-run identifier'
+        required: true
+        type: string
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Save inputs to files
+        run: |
+          echo "${{ github.event.inputs.task }}" > task.txt
+          echo "${{ github.event.inputs.client_id }}" > client_id.txt
+
+      - name: Install python (pip) & run agent
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 agent_cli.py
+
+      - name: Upload agent output artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-output
+          path: output.txt
